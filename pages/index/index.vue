@@ -110,12 +110,7 @@
 						msgItem.content = res.data
 					}
 					else if(res.statusCode == 413){
-						uni.showToast({
-							title: '查询的文字不能超过6个字，请重新输入！',
-							duration: 2000,
-							icon: "error"
-						});
-						this.msgList.pop;
+						msgItem.content = '查询的文字不能超过6个字，请重新输入！'
 					}
 					this.$nextTick(() => {
 						this.$refs.msgBox.$el.scrollTop = this.$refs.msgBox.$el.scrollHeight + 500
