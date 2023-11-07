@@ -17,115 +17,121 @@
 						面试展示
 					</view>
 					<view class="m-m-content">
-						<pre>{{item.content}}</pre>
-				
+						<pre>{{item.message}}</pre>
+
 					</view>
 				</view>
-				
+
 			</template>
 
 		</view>
-		
+
 		<view class="buttom-box">
 			<div class="buttom-left">
 				<image src="@/static/image/more.png" />
-			
+
 			</div>
 			<input v-model="myMsg.message"/>
 			<button @click="toSend">
-					Send
-					<image src="@/static/image/send.png" />
+				Send
+				<image src="@/static/image/send.png" />
 			</button>
 		</view>
 	</view>
 </template>
 
-<script>
-	export default {
-		data() {
-			return {
-				sendState: false,
-				myMsg: {
-					message: ""
-				},
-				msgList: [
-					/* {
-						type: 0,
-						message: "孙悟空"
-					},
-					{
-						type: 1,
-						content: "1. \"The Chronicles of Elara: A Tale of Magic and Destiny\"\n2. \"In the Shadow of Gabriel: A Dark Fantasy Adventure\"\n3. \"The Journey of Seraphina: A Heroine's Quest for Truth and Redemption\""
-					}, */
-				]
-				
-			}
-		},
-		onLoad() {
+<script setup lang="ts">
+	import { ref, nextTick } from "vue"
 
-		},
-		methods: {
-			toSend() {
-				if(!this.myMsg.message){
-					return;
-				}
-				if(this.sendState){
-					uni.showToast({
-						title: 'ai响应中...',
-						duration: 2000,
-						icon: "loading"
-					});
-					return;
-				}else{
-					this.sendState = true;
-				}
-				
-				let msgData = JSON.parse(JSON.stringify(this.myMsg))
-				
-				this.msgList.push({
-					type: 0,
-					message: this.myMsg.message
-				});
-				this.msgList.push({
-					type: 1,
-					content: "Typing..."
-				});
-				this.$nextTick(() => {
-					this.$refs.msgBox.$el.scrollTop = this.$refs.msgBox.$el.scrollHeight + 500
-				})
-				this.myMsg.message = "";
-				uni.request({		//发送请求
-					url: "/send",
-					data:msgData,
-					method: "post",
-					header: {
-						"Access-Control-Allow-Origin":"*",
-					},
-				}).then(res => {
-					this.sendState = false;
-					let msgItem = this.msgList[this.msgList.length - 1];
-					if(res.statusCode == 200){
-						msgItem.content = res.data.content
-					}else if(res.statusCode == 500){
-						msgItem.content = res.data
-					}
-					else if(res.statusCode == 413){
-						msgItem.content = '查询的文字不能超过6个字，请重新输入！'
-					}
-					this.$nextTick(() => {
-						this.$refs.msgBox.$el.scrollTop = this.$refs.msgBox.$el.scrollHeight + 500
-					})
-				})
+	interface msgType {
+		type?: string,
+		message: string,
+	}
+
+	let sendState: boolean = false;
+	const myMsg = ref<msgType>({
+		message: ""
+	})
+	const msgList = ref<Array<msgType>>([]);
+	const msgBox = ref(null)
+
+	function toSend() {
+		if(!myMsg.value.message){
+			return;
+		}
+		if(sendState){
+			uni.showToast({
+				title: 'ai响应中...',
+				duration: 2000,
+				icon: "loading"
+			});
+			return;
+		}else{
+			sendState = true;
+		}
+
+		let msgData = JSON.parse(JSON.stringify(myMsg.value))
+
+		msgList.value.push({
+			type: 0,
+			message: myMsg.value.message
+		});
+		msgList.value.push({
+			type: 1,
+			message: "Typing..."
+		});
+		nextTick(() => {
+			msgBox.value.$el.scrollTop = msgBox.value.$el.scrollHeight + 500
+		})
+		myMsg.value.message = "";
+		uni.request({		//发送请求
+			url: "/api/send",
+			data:msgData,
+			method: "post",
+			header: {
+				"Access-Control-Allow-Origin":"*",
+			},
+		}).then(res => {
+			sendState = false;
+			let msgItem: msgType = msgList.value[msgList.value.length - 1];
+			if(res.statusCode == 200){
+				msgShow(msgItem, res.data.content);
+			}else if(res.statusCode == 413){
+				msgShow(msgItem, '查询的文字不能超过6个字，请重新输入！');
+			}else{
+				msgShow(msgItem, res.data);
 			}
+			nextTick(() => {
+				msgBox.value.$el.scrollTop = msgBox.value.$el.scrollHeight + 500
+			})
+		})
+	}
+
+	function msgShow(msgObj: msgType, text: string) {
+		msgObj.message = "";
+		if(text.length){
+			let textArr = text.split("");
+			let i = 0
+			let msgTime = setInterval(() => {
+				if(i < textArr.length){
+					msgObj.message += textArr[i];
+					i++
+					nextTick(() => {
+						msgBox.value.$el.scrollTop = msgBox.value.$el.scrollHeight + 500
+					})
+				}else {
+					clearInterval(msgTime);
+				}
+			}, 15)
 		}
 	}
+	
 </script>
 
-<style lang="scss" scoped>
-	
+<style lang="scss">
 	.content{
 		font-size: 22rpx;
-		
+
 		.msg-box{
 			height: calc(100vh - 200rpx);
 			padding-bottom: 20rpx;
@@ -155,7 +161,7 @@
 						word-wrap: break-word;
 					}
 				}
-				
+
 			}
 			.my-msg{
 				margin-left: 180rpx;
@@ -167,12 +173,12 @@
 				margin-left: 10rpx;
 				.m-m-top{
 					background-color: #297810;
-				
+
 				}
-				
+
 			}
 		}
-		
+
 		.buttom-box{
 			position: absolute;
 			width: 680rpx;
@@ -183,7 +189,7 @@
 			display: flex;
 			.buttom-left{
 				padding: 10rpx 10rpx 4rpx;
-			
+
 				background-color: #E8E9EE;
 				image{
 					width: 40rpx;
@@ -205,16 +211,15 @@
 				display: flex;
 				line-height: 40rpx;
 				padding: 10rpx 12rpx;
-			
+
 				image{
 					margin-left: 10rpx;
 					width: 40rpx;
 					height: 40rpx;
 				}
 			}
-			
-			
+
+
 		}
 	}
-	
 </style>

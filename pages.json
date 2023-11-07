@@ -3,7 +3,7 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "ai聊天框"
+				"navigationBarTitleText": "uni-app"
 			}
 		}
 	],

@@ -46,19 +46,6 @@
             "sdkConfigs" : {}
         }
     },
-		// h5特有相关
-		"h5":{
-			"devServer": {
-				"proxy":{
-					"/":{ 
-						"target" : "https://wm-interview.onrender.com", //请求的目标域名
-						"changeOrigin" : true, //是否跨域
-						"secure" : false
-					}
-				},
-				"port" : 8080 //当前项目的端口号
-			}
-		},
     /* 快应用特有相关 */
     "quickapp" : {},
     /* 小程序特有相关 */
@@ -81,5 +68,5 @@
     "uniStatistics" : {
         "enable" : false
     },
-    "vueVersion" : "2"
+    "vueVersion" : "3"
 }
