@@ -44,7 +44,7 @@
 	import { ref, nextTick } from "vue"
 
 	interface msgType {
-		type?: string,
+		type?: number,
 		message: string,
 	}
 
