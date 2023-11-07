@@ -115,6 +115,7 @@
 							duration: 2000,
 							icon: "error"
 						});
+						this.msgList.pop;
 					}
 					this.$nextTick(() => {
 						this.$refs.msgBox.$el.scrollTop = this.$refs.msgBox.$el.scrollHeight + 500
